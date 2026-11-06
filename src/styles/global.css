@@ -2,7 +2,6 @@
 @import '@fontsource-variable/bricolage-grotesque/standard.css'; /* inclui os eixos wdth e opsz */
 @import '@fontsource-variable/inter-tight';
 @import '@fontsource/jetbrains-mono/400.css';
-@import '@fontsource/instrument-serif/400.css';
 
 /* Tokens do tema: verde-escuro por padrão */
 @theme {
@@ -20,7 +19,6 @@
   --font-display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
   --font-sans: 'Inter Tight Variable', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --font-serif: 'Instrument Serif', Georgia, serif;
 }
 
 @layer base {

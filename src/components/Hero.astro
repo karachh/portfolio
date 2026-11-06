@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import photo from '../assets/eu2-recorte.png'; // fundo removido (gerado de refs/eu2.jpg)
+import photo from '../assets/eu.jpg'; // foto original, com o fundo
 import Background from './Background.astro';
 import { content, type Lang } from '../i18n/content';
 
@@ -26,18 +26,18 @@ const t = content[lang].hero;
   <!-- Foto + texto: no computador formam um bloco só, centralizado na tela.
        No celular o bloco "some" (display: contents) e cada parte tem sua posição. -->
   <div class="contents md:absolute md:top-[47%] md:left-1/2 md:z-20 md:flex md:-translate-x-1/2 md:-translate-y-1/2 md:items-center md:gap-10 lg:gap-14">
-  <!-- Foto recortada dentro de um círculo verde -->
+  <!-- Foto dentro de um círculo -->
   <div class="hero-photo absolute top-[54%] left-1/2 z-0 aspect-square w-[min(78vw,52svh,460px)] -translate-x-1/2 -translate-y-1/2 md:static md:w-[min(36vw,58svh,440px)] md:shrink-0 md:translate-x-0 md:translate-y-0">
     <div class="photo-circle relative h-full w-full overflow-hidden rounded-full">
       <Image
         src={photo}
         alt={t.photoAlt}
-        widths={[480, 645]}
+        widths={[480, 800]}
         sizes="(min-width: 768px) 460px, 78vw"
         format="webp"
         loading="eager"
         fetchpriority="high"
-        class="absolute bottom-0 left-1/2 block h-auto w-[92%] -translate-x-1/2"
+        class="absolute inset-0 block h-full w-full object-cover object-[50%_35%]"
       />
     </div>
   </div>
