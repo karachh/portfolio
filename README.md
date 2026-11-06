@@ -1,6 +1,6 @@
 # Portfolio
 
-Currículo online de **Cauã Karach**, Analista de Desenvolvimento de Sistemas e estudante de Engenharia de Software na UEM.
+Meu currículo online, como Analista de Desenvolvimento de Sistemas e estudante de Engenharia de Software na UEM.
 
 Site de página única, em português e inglês, com experiência, formação, habilidades, projetos e contato.
 
