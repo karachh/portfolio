@@ -1,0 +1,429 @@
+---
+// Projetos em carrossel com profundidade: os cards ficam empilhados em 3D,
+// dá para arrastar para o lado, usar as setas, os pontos ou o teclado.
+// Lógica adaptada do Depth Carousel do React Bits (ver ProjectsCarousel abaixo).
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = content[lang].projects;
+const n = t.items.length;
+---
+
+<section id="projetos" class="overflow-x-clip py-28 md:py-40">
+  <div class="mx-auto max-w-6xl px-4 sm:px-8">
+    <p class="eyebrow" data-reveal>{t.label}</p>
+    <h2 class="display-condensed mt-6 text-6xl text-mist sm:text-8xl md:text-9xl" data-reveal>{t.title}</h2>
+
+    <div
+      class="dc relative mt-14 md:mt-20"
+      data-carousel
+      tabindex="0"
+      role="group"
+      aria-roledescription="carousel"
+      aria-label={t.carousel}
+      data-reveal
+    >
+      <div class="dc-stage" data-stage>
+        {
+          t.items.map((p, i) => (
+            <article
+              data-card
+              aria-roledescription="slide"
+              aria-label={`${i + 1} / ${n}: ${p.name}`}
+              class="dc-card flex flex-col rounded-3xl border border-forest-700 bg-forest-850 p-7 sm:p-10"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-[11px] tracking-[0.18em] uppercase">
+                <span class="flex items-center gap-3">
+                  {p.featured && <span class="rounded-full bg-lime px-3 py-1 text-forest-950">{t.featured}</span>}
+                  <span class="text-moss">{p.period}</span>
+                </span>
+                <span class="text-lime">{p.status}</span>
+              </div>
+
+              <h3 class="mt-6 font-display text-3xl font-bold tracking-tight text-mist sm:text-4xl">{p.name}</h3>
+              <p class="mt-4 leading-relaxed text-sage">{p.description}</p>
+
+              <ul class="mt-5 space-y-1.5 text-[15px] text-sage/90">
+                {p.highlights.map((h) => (
+                  <li class="flex gap-3">
+                    <span class="text-lime">→</span>
+                    {h}
+                  </li>
+                ))}
+              </ul>
+
+              {p.stats.length > 0 && (
+                <dl class="mt-6 flex gap-8">
+                  {p.stats.map((s) => (
+                    <div>
+                      <dd class="font-display text-4xl font-bold text-lime">{s.n}</dd>
+                      <dt class="mt-1 font-mono text-[10px] tracking-[0.18em] text-moss uppercase">{s.l}</dt>
+                    </div>
+                  ))}
+                </dl>
+              )}
+
+              <div class="mt-auto flex flex-wrap items-end justify-between gap-4 pt-8">
+                <ul class="flex flex-wrap gap-2">
+                  {p.stack.map((s) => (
+                    <li class="rounded-full border border-forest-700 px-3 py-1 font-mono text-xs text-sage">{s}</li>
+                  ))}
+                </ul>
+                <a
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-flex items-center gap-2 rounded-full border border-forest-500 px-5 py-2.5 text-sm text-mist transition-colors hover:border-lime hover:bg-lime hover:text-forest-950"
+                >
+                  {t.repo} ↗
+                </a>
+              </div>
+              <span class="dc-tint" data-tint aria-hidden="true" />
+            </article>
+          ))
+        }
+      </div>
+
+      <button type="button" class="dc-arrow dc-arrow--prev" data-prev aria-label={t.prev}>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+      <button type="button" class="dc-arrow dc-arrow--next" data-next aria-label={t.next}>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+
+      <div class="dc-dots" role="tablist">
+        {t.items.map((p, i) => <button type="button" role="tab" class="dc-dot" data-dot aria-label={`${t.goTo} ${p.name}`} aria-selected={i === 0 ? 'true' : 'false'} />)}
+      </div>
+    </div>
+
+    <p class="mt-6 text-center font-mono text-[11px] tracking-[0.2em] text-moss uppercase">{t.drag}</p>
+  </div>
+</section>
+
+<script>
+  /*
+   * ProjectsCarousel: lógica do Depth Carousel (React Bits,
+   * https://reactbits.dev/components/depth-carousel, MIT + Commons Clause,
+   * Copyright (c) 2026 David Haz) portada para JavaScript puro, para funcionar
+   * com os cards de projeto em Astro. Mudanças: cards com conteúdo em vez de
+   * imagens, altura igualada pelo card mais alto e a rodinha só move o carrossel
+   * no gesto horizontal (a rolagem vertical da página continua livre).
+   */
+  import gsap from 'gsap';
+
+  const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
+
+  const root = document.querySelector<HTMLElement>('[data-carousel]')!;
+  const stage = root.querySelector<HTMLElement>('[data-stage]')!;
+  const cards = [...root.querySelectorAll<HTMLElement>('[data-card]')];
+  const tints = cards.map((c) => c.querySelector<HTMLElement>('[data-tint]'));
+  const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-dot]')];
+  const n = cards.length;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const cfg = { depth: 160, tilt: 14, visibleCards: 2, falloff: 0.3, blur: 3, duration: 0.7, ease: 'power3.out', loop: true };
+  let spread = 120;
+  let cardWidth = 600;
+  let pos = 0;
+  let focus = 0;
+  let tween: gsap.core.Tween | null = null;
+
+  const layout = (p: number) => {
+    for (let i = 0; i < n; i++) {
+      const el = cards[i];
+      let d = i - p;
+      if (cfg.loop && n > 1) {
+        d = ((d % n) + n) % n;
+        if (d > n / 2) d -= n;
+      }
+      const back = Math.max(0, d);
+      const shown = Math.abs(d) <= cfg.visibleCards + 0.5;
+      const tz = -cfg.depth * d;
+      const tx = spread * d;
+      const ry = cfg.tilt * clamp(d, 0, 1);
+      let opacity = d < 0 ? Math.max(0, 1 + d) : 1;
+      if (!shown) opacity = 0;
+      const brightness = Math.max(0.15, 1 - back * cfg.falloff);
+      const blurPx = Math.min(cfg.blur, (back / Math.max(1, cfg.visibleCards)) * cfg.blur);
+
+      el.style.transform = `translate(-50%, -50%) translateX(${tx.toFixed(2)}px) translateZ(${tz.toFixed(2)}px) rotateY(${ry.toFixed(3)}deg)`;
+      el.style.opacity = opacity.toFixed(3);
+      el.style.filter = back < 0.01 ? 'none' : `brightness(${brightness.toFixed(3)}) blur(${blurPx.toFixed(2)}px)`;
+      el.style.zIndex = String(Math.round(2000 - d * 20));
+      el.style.pointerEvents = shown && opacity > 0.05 ? 'auto' : 'none';
+      const tint = tints[i];
+      if (tint) tint.style.opacity = clamp(back * cfg.falloff * 1.25, 0, 0.86).toFixed(3);
+    }
+  };
+
+  const updateA11y = () => {
+    cards.forEach((c, i) => {
+      const on = i === focus;
+      c.setAttribute('aria-hidden', String(!on));
+      c.querySelectorAll('a').forEach((a) => (on ? a.removeAttribute('tabindex') : a.setAttribute('tabindex', '-1')));
+    });
+    dots.forEach((d, i) => {
+      d.classList.toggle('is-active', i === focus);
+      d.setAttribute('aria-selected', String(i === focus));
+    });
+  };
+
+  const tweenTo = (target: number, animate: boolean) => {
+    tween?.kill();
+    const proxy = { p: pos };
+    tween = gsap.to(proxy, {
+      p: target,
+      duration: animate && !reduced ? cfg.duration : 0,
+      ease: cfg.ease,
+      onUpdate: () => {
+        pos = proxy.p;
+        layout(pos);
+      },
+      onComplete: () => {
+        pos = ((pos % n) + n) % n;
+        layout(pos);
+      },
+    });
+  };
+
+  const setFocus = (raw: number, animate = true) => {
+    const idx = cfg.loop ? ((raw % n) + n) % n : clamp(raw, 0, n - 1);
+    let delta = idx - pos;
+    if (cfg.loop && n > 1) {
+      delta = ((delta % n) + n) % n;
+      if (delta > n / 2) delta -= n;
+    }
+    tweenTo(pos + delta, animate);
+    focus = idx;
+    updateA11y();
+  };
+  const navigateBy = (step: number) => setFocus(focus + step);
+
+  // Tamanho: cards na largura da tela (até 620px), todos com a altura do mais alto
+  const measure = () => {
+    const w = root.clientWidth;
+    cardWidth = Math.min(620, w * (w < 640 ? 0.86 : 0.62));
+    spread = cardWidth * 0.34;
+    cards.forEach((c) => {
+      c.style.width = `${cardWidth}px`;
+      c.style.height = 'auto';
+    });
+    const h = Math.max(...cards.map((c) => c.offsetHeight));
+    cards.forEach((c) => (c.style.height = `${h}px`));
+    stage.style.height = `${h + 40}px`;
+    root.style.height = `${h + 110}px`;
+    layout(pos);
+  };
+  new ResizeObserver(measure).observe(root);
+  document.fonts?.ready.then(measure);
+
+  // Arrastar
+  let drag: { x: number; start: number; lastX: number; lastT: number; v: number; moved: boolean; id: number } | null = null;
+  let justDragged = false;
+  root.addEventListener('pointerdown', (e) => {
+    if ((e.target as Element).closest('[data-prev],[data-next],[data-dot]')) return;
+    tween?.kill();
+    drag = { x: e.clientX, start: pos, lastX: e.clientX, lastT: performance.now(), v: 0, moved: false, id: e.pointerId };
+  });
+  root.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const stepPx = Math.max(cardWidth * 0.55, 40);
+    const dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) > 4) {
+      drag.moved = true;
+      root.setPointerCapture(drag.id);
+    }
+    if (!drag.moved) return;
+    const now = performance.now();
+    drag.v = (e.clientX - drag.lastX) / Math.max(now - drag.lastT, 1);
+    drag.lastX = e.clientX;
+    drag.lastT = now;
+    pos = drag.start - dx / stepPx;
+    layout(pos);
+  });
+  const end = () => {
+    if (!drag) return;
+    const d = drag;
+    drag = null;
+    if (!d.moved) return;
+    justDragged = true;
+    setTimeout(() => (justDragged = false), 0);
+    const stepPx = Math.max(cardWidth * 0.55, 40);
+    setFocus(Math.round(pos - (d.v * 180) / stepPx));
+  };
+  root.addEventListener('pointerup', end);
+  root.addEventListener('pointercancel', end);
+
+  // Clique: depois de arrastar não abre link; em card de trás, traz para frente
+  root.addEventListener(
+    'click',
+    (e) => {
+      if (justDragged) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      const card = (e.target as Element).closest<HTMLElement>('[data-card]');
+      if (!card) return;
+      const i = cards.indexOf(card);
+      if (i !== focus) {
+        e.preventDefault();
+        setFocus(i);
+      }
+    },
+    true,
+  );
+
+  // Rodinha/trackpad: só o gesto horizontal mexe no carrossel
+  let wheelTimer = 0;
+  root.addEventListener(
+    'wheel',
+    (e) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      tween?.kill();
+      const delta = e.deltaMode === 1 ? e.deltaX * 24 : e.deltaX;
+      pos += clamp(delta / (cardWidth * 0.9), -0.6, 0.6);
+      layout(pos);
+      clearTimeout(wheelTimer);
+      wheelTimer = window.setTimeout(() => setFocus(Math.round(pos)), 130);
+    },
+    { passive: false },
+  );
+
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      navigateBy(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      navigateBy(1);
+    }
+  });
+  root.querySelector('[data-prev]')!.addEventListener('click', () => navigateBy(-1));
+  root.querySelector('[data-next]')!.addEventListener('click', () => navigateBy(1));
+  dots.forEach((d, i) => d.addEventListener('click', () => setFocus(i)));
+
+  updateA11y();
+  measure();
+</script>
+
+<style>
+  .dc {
+    perspective: 1400px;
+    perspective-origin: 50% 50%;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+    outline: none;
+    min-height: 420px;
+  }
+  .dc:active {
+    cursor: grabbing;
+  }
+  .dc:focus-visible {
+    outline: 2px solid var(--color-lime);
+    outline-offset: 6px;
+    border-radius: 24px;
+  }
+  .dc-stage {
+    position: absolute;
+    inset: 0 0 auto 0;
+    transform-style: preserve-3d;
+  }
+  .dc-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+    overflow: hidden;
+    will-change: transform, opacity, filter;
+    box-shadow:
+      0 30px 60px -20px rgba(0, 0, 0, 0.65),
+      0 8px 20px -10px rgba(0, 0, 0, 0.5);
+  }
+  .dc-card[aria-hidden='true'] {
+    cursor: pointer;
+  }
+  .dc-tint {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    background: #06120d;
+    mix-blend-mode: multiply;
+  }
+  .dc-arrow {
+    position: absolute;
+    top: calc(50% - 35px);
+    transform: translateY(-50%);
+    z-index: 3000;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--color-forest-700);
+    border-radius: 999px;
+    background: rgba(10, 28, 21, 0.7);
+    backdrop-filter: blur(8px);
+    color: var(--color-mist);
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .dc-arrow:hover {
+    border-color: var(--color-lime);
+    color: var(--color-lime);
+  }
+  .dc-arrow--prev {
+    left: 0;
+  }
+  /* No celular basta arrastar; as setas cobririam o texto do card */
+  @media (max-width: 639px) {
+    .dc-arrow {
+      display: none;
+    }
+  }
+  .dc-arrow--next {
+    right: 0;
+  }
+  .dc-dots {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3000;
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(10, 28, 21, 0.6);
+    backdrop-filter: blur(6px);
+  }
+  .dc-dot {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border-radius: 999px;
+    background: rgba(233, 241, 236, 0.3);
+    cursor: pointer;
+    transition:
+      width 0.25s ease,
+      background 0.25s ease;
+  }
+  .dc-dot.is-active {
+    width: 20px;
+    background: var(--color-lime);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dc-card {
+      will-change: auto;
+    }
+  }
+</style>

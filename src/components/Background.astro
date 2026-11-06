@@ -1,0 +1,23 @@
+---
+// Fundo animado Color Bends (React Bits), em faixas de verde do tema.
+// "hero": mais vivo e reage ao mouse. "page": bem apagado, atrás dos textos.
+import ColorBends from './react/ColorBends.jsx';
+
+interface Props {
+  variant?: 'hero' | 'page';
+  class?: string;
+}
+const { variant = 'hero', class: className = '' } = Astro.props;
+
+// Tons tirados da paleta do tema (base #0a1c15, refs/CorTema.png)
+const greens = ['#1c4232', '#3d7a5c', '#7fe3b0', '#c4f26b'];
+
+const presets = {
+  hero: { colors: greens, intensity: 0.9, speed: 0.2, noise: 0.08, mouseInfluence: 1, parallax: 0.5, bandWidth: 6 },
+  page: { colors: greens, intensity: 0.35, speed: 0.12, noise: 0.05, mouseInfluence: 0, parallax: 0, bandWidth: 6 },
+};
+---
+
+<div class:list={['bg-forest-900', className]} aria-hidden="true">
+  <ColorBends client:only="react" transparent {...presets[variant]} />
+</div>

@@ -1,0 +1,193 @@
+---
+// Stack em grade de blocos: ícone apagado que acende ao passar o mouse,
+// com etiquetas de categoria (em cima) e nome (embaixo).
+import Icon from './Icon.astro';
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = content[lang].stack;
+const g = t.groups;
+
+type Item = { name: string; group: string; slug?: string; custom?: 'sql' | 'etl' | 'postgis' | 'iso' | 'scrum' };
+
+const master: Item[] = [
+  { name: 'Python', group: g.lang, slug: 'python' },
+  { name: 'SQL', group: g.lang, custom: 'sql' },
+  { name: 'ETL', group: g.data, custom: 'etl' },
+  { name: 'Pandas', group: g.data, slug: 'pandas' },
+  { name: 'PostgreSQL', group: g.data, slug: 'postgresql' },
+  { name: 'PostGIS', group: g.data, custom: 'postgis' },
+  { name: 'SQLite', group: g.data, slug: 'sqlite' },
+  { name: 'Docker', group: g.tools, slug: 'docker' },
+  { name: 'Git', group: g.tools, slug: 'git' },
+  { name: 'Claude Code', group: g.tools, slug: 'claude' },
+  { name: 'ISO 27001', group: g.process, custom: 'iso' },
+  { name: 'Scrum', group: g.process, custom: 'scrum' },
+];
+const used: Item[] = [
+  { name: 'Java', group: g.projects, slug: 'openjdk' },
+  { name: 'Spring Boot', group: g.projects, slug: 'springboot' },
+  { name: 'Angular', group: g.projects, slug: 'angular' },
+  { name: 'Django', group: g.projects, slug: 'django' },
+];
+const blocks = [
+  { title: t.master, items: master, size: 'lg' },
+  { title: t.used, items: used, size: 'sm' },
+];
+---
+
+<section id="stack" class="relative px-4 py-28 sm:px-8 md:py-40">
+  <!-- Título centralizado com palavra gigante ao fundo -->
+  <div class="relative mx-auto max-w-6xl text-center" data-reveal>
+    <span
+      aria-hidden="true"
+      class="display-condensed pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[clamp(4.5rem,17vw,15rem)] whitespace-nowrap text-mist/[0.035] select-none"
+    >
+      {t.backdrop}
+    </span>
+    <h2 class="relative font-display text-[clamp(3rem,8vw,6.5rem)] leading-none tracking-tight">
+      <span class="title-glow font-bold text-mist">{t.titleA}</span>{' '}<span class="font-extralight text-forest-500">{t.titleB}</span>
+    </h2>
+    <p class="relative mt-5 flex items-center justify-center gap-3 font-mono text-[10px] tracking-[0.35em] text-moss uppercase">
+      <span class="h-px w-10 bg-forest-700"></span>
+      {t.label}
+      <span class="h-px w-10 bg-forest-700"></span>
+    </p>
+  </div>
+
+  {
+    blocks.map((b) => (
+      <div class="mx-auto mt-20 max-w-5xl md:mt-24">
+        <p class="mb-10 text-center font-mono text-xs tracking-[0.25em] text-sage uppercase" data-reveal>
+          {b.title}
+        </p>
+        <ul class:list={['flex flex-wrap justify-center', b.size === 'lg' ? 'gap-x-4 gap-y-12 sm:gap-x-8 sm:gap-y-14' : 'gap-x-4 gap-y-12 sm:gap-x-6']}>
+          {b.items.map((it, i) => (
+            <li data-reveal style={`--d:${(i % 6) * 60}ms`}>
+              <div
+                tabindex="0"
+                aria-label={`${it.name} · ${it.group}`}
+                class:list={['tile group relative grid place-items-center outline-none', b.size === 'lg' ? 'size-[84px] sm:size-[104px] md:size-[116px]' : 'size-[72px] sm:size-[88px]']}
+              >
+                <span class="tile-icon relative z-10">
+                  <Icon name={it.name} slug={it.slug} custom={it.custom} size={b.size === 'lg' ? 38 : 30} />
+                </span>
+                <span class="pill pill-top">{it.group}</span>
+                <span class="pill pill-bottom">{it.name}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+</section>
+
+<style>
+  .title-glow {
+    text-shadow: 0 0 24px rgba(196, 242, 107, 0.25);
+  }
+
+  .tile {
+    border-radius: 1.6rem;
+    border: 1px solid rgba(233, 241, 236, 0.06);
+    background: rgba(14, 36, 27, 0.65);
+    backdrop-filter: blur(6px);
+    transition:
+      border-color 0.35s ease,
+      transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.35s ease;
+  }
+  .tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 50% 60%, rgba(196, 242, 107, 0.22), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .tile-icon {
+    filter: grayscale(1) brightness(1.5);
+    opacity: 0.45;
+    transition:
+      filter 0.35s ease,
+      opacity 0.35s ease,
+      transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .tile:hover,
+  .tile:focus-visible {
+    border-color: rgba(196, 242, 107, 0.35);
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px -18px rgba(196, 242, 107, 0.35);
+  }
+  .tile:hover::before,
+  .tile:focus-visible::before {
+    opacity: 1;
+  }
+  .tile:hover .tile-icon,
+  .tile:focus-visible .tile-icon {
+    filter: none;
+    opacity: 1;
+    transform: scale(1.12);
+  }
+
+  /* Etiquetas */
+  .pill {
+    position: absolute;
+    left: 50%;
+    z-index: 20;
+    white-space: nowrap;
+    border-radius: 999px;
+    border: 1px solid rgba(233, 241, 236, 0.08);
+    background: #06120d;
+    padding: 0.2rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    pointer-events: none;
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
+  }
+  .pill-top {
+    top: 0;
+    color: var(--color-moss);
+    transform: translate(-50%, -40%);
+    opacity: 0;
+  }
+  .pill-bottom {
+    bottom: 0;
+    color: var(--color-mist);
+    transform: translate(-50%, 40%);
+    opacity: 0;
+  }
+  .tile:hover .pill,
+  .tile:focus-visible .pill {
+    opacity: 1;
+  }
+  .tile:hover .pill-top,
+  .tile:focus-visible .pill-top {
+    transform: translate(-50%, -55%);
+  }
+  .tile:hover .pill-bottom,
+  .tile:focus-visible .pill-bottom {
+    transform: translate(-50%, 55%);
+  }
+
+  /* Em telas de toque não existe hover: nome sempre visível embaixo */
+  @media (hover: none) {
+    .pill-bottom {
+      opacity: 1;
+      transform: translate(-50%, 55%);
+    }
+    .tile-icon {
+      opacity: 0.8;
+      filter: none;
+    }
+  }
+</style>

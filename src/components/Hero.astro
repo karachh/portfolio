@@ -1,0 +1,146 @@
+---
+import { Image } from 'astro:assets';
+import photo from '../assets/eu2-recorte.png'; // fundo removido (gerado de refs/eu2.jpg)
+import Background from './Background.astro';
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = content[lang].hero;
+---
+
+<section id="inicio" class="relative isolate h-svh min-h-[620px] overflow-hidden bg-forest-900">
+  <Background variant="hero" class="absolute inset-0 -z-10" />
+  <!-- Escurece topo e base para os textos ficarem legíveis sobre o fundo -->
+  <div class="pointer-events-none absolute inset-0 -z-[5] bg-gradient-to-b from-forest-900/80 via-transparent via-45% to-forest-900/70" aria-hidden="true"></div>
+
+  <!-- Resumo no canto superior direito -->
+  <p
+    class="absolute top-20 right-5 z-20 max-w-[19rem] text-right text-[15px] leading-snug text-sage sm:right-8 md:top-8 md:max-w-[24rem] md:text-[17px]"
+  >
+    {t.summary}
+  </p>
+
+  <!-- Foto + texto: no computador formam um bloco só, centralizado na tela.
+       No celular o bloco "some" (display: contents) e cada parte tem sua posição. -->
+  <div class="contents md:absolute md:top-[47%] md:left-1/2 md:z-20 md:flex md:-translate-x-1/2 md:-translate-y-1/2 md:items-center md:gap-10 lg:gap-14">
+  <!-- Foto recortada dentro de um círculo verde -->
+  <div class="hero-photo absolute top-[54%] left-1/2 z-0 aspect-square w-[min(78vw,52svh,460px)] -translate-x-1/2 -translate-y-1/2 md:static md:w-[min(36vw,58svh,440px)] md:shrink-0 md:translate-x-0 md:translate-y-0">
+    <div class="photo-circle relative h-full w-full overflow-hidden rounded-full">
+      <Image
+        src={photo}
+        alt={t.photoAlt}
+        widths={[480, 645]}
+        sizes="(min-width: 768px) 460px, 78vw"
+        format="webp"
+        loading="eager"
+        fetchpriority="high"
+        class="absolute bottom-0 left-1/2 block h-auto w-[92%] -translate-x-1/2"
+      />
+    </div>
+  </div>
+
+  <!-- Nome + cargo ao lado do círculo: tudo alinhado à mesma borda esquerda -->
+  <div class="absolute top-[17%] right-5 z-20 flex flex-col items-end text-right sm:right-8 md:static md:max-w-[20rem] md:items-start md:text-left lg:max-w-none lg:shrink-0 lg:whitespace-nowrap">
+    <svg class="mb-5 hidden text-lime md:block" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+      <path d="M6 6l12 12M18 8v10H8"></path>
+    </svg>
+    <h1 class="mb-3 font-mono text-[11px] tracking-[0.25em] text-lime uppercase">Cauã Karach</h1>
+    <p class="max-w-[12rem] font-display text-lg leading-tight text-mist md:max-w-none md:text-2xl">{t.role}</p>
+    <p class="mt-2 font-display text-lg leading-tight text-mist md:text-2xl">{t.school}</p>
+  </div>
+  </div>
+
+  <!-- Letreiro de estádio: rola sem parar, sem emenda -->
+  <div class="absolute right-0 bottom-[6vh] left-0 z-10 overflow-hidden select-none" aria-label={t.marquee.join(' · ')}>
+    <div id="marquee" class="flex w-max whitespace-nowrap will-change-transform" aria-hidden="true">
+      <div data-copy class="flex shrink-0">
+        {
+          t.marquee.map((p) => (
+            <span class="pr-[0.6em] font-display text-[clamp(3rem,9vw,8rem)] leading-none font-medium tracking-[-0.04em] text-mist">
+              {p}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Indicador de rolagem -->
+  <a
+    href="#sobre"
+    class="absolute right-5 bottom-5 z-20 grid h-10 w-10 place-items-center rounded-full bg-forest-900/80 text-mist backdrop-blur transition-colors hover:text-lime sm:right-8"
+    aria-label={t.scroll}
+  >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M12 4v16M5 13l7 7 7-7"></path>
+    </svg>
+  </a>
+</section>
+
+<script>
+  // Letreiro em JS: mede a largura de uma cópia, clona quantas precisar para
+  // cobrir a tela e desloca em pixels com módulo, então nunca "pula".
+  const track = document.getElementById('marquee')!;
+  const first = track.querySelector<HTMLElement>('[data-copy]')!;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const speed = reduce ? 15 : 90; // px por segundo
+  let width = 0;
+  let x = 0;
+  let last = performance.now();
+
+  const layout = () => {
+    track.querySelectorAll('[data-clone]').forEach((n) => n.remove());
+    width = first.getBoundingClientRect().width;
+    const copies = Math.ceil(window.innerWidth / width) + 1;
+    for (let i = 0; i < copies; i++) {
+      const c = first.cloneNode(true) as HTMLElement;
+      c.removeAttribute('data-copy');
+      c.setAttribute('data-clone', '');
+      track.appendChild(c);
+    }
+  };
+
+  const frame = (now: number) => {
+    const dt = Math.min(now - last, 64) / 1000;
+    last = now;
+    x = (x + speed * dt) % width;
+    track.style.transform = `translate3d(${-x}px,0,0)`;
+    requestAnimationFrame(frame);
+  };
+
+  document.fonts.ready.then(() => {
+    layout();
+    requestAnimationFrame(frame);
+  });
+  let rt: number;
+  addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = window.setTimeout(layout, 150);
+  });
+</script>
+
+<style>
+  /* Círculo verde atrás da foto */
+  .photo-circle {
+    /* Verde pastel escurecido (sálvia) */
+    background: radial-gradient(circle at 50% 35%, #8aa898 0%, #6d8c7b 55%, #536e60 100%);
+    box-shadow:
+      0 0 0 1px rgba(196, 242, 107, 0.18),
+      0 30px 80px -20px rgba(0, 0, 0, 0.6);
+  }
+  /* Entrada depois da tela de carregamento */
+  :global(.js) .hero-photo {
+    opacity: 0;
+    transform: translateY(40px);
+    transition:
+      opacity 1.2s ease,
+      transform 1.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  :global(.js.loaded) .hero-photo {
+    opacity: 1;
+    transform: none;
+  }
+</style>

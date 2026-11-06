@@ -1,0 +1,118 @@
+---
+// Botão fixo + painel lateral expansível com menu, redes e contato.
+import { content, links, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = content[lang].nav;
+const dots = ['#c4f26b', '#7fe3b0', '#5ec4c9', '#e8d27a', '#f0a37a', '#c9a8f0'];
+const prefix = lang === 'pt' ? '/' : '/en/';
+---
+
+<!-- Topo fixo à esquerda: menu + idioma -->
+<div class="fixed top-4 left-4 z-50 flex items-center gap-2 sm:top-6 sm:left-6">
+  <button
+    id="menu-open"
+    type="button"
+    aria-label={t.open}
+    aria-expanded="false"
+    aria-controls="side-panel"
+    class="group grid h-11 w-11 place-items-center rounded-full border border-forest-700 bg-forest-900/70 backdrop-blur transition-colors hover:border-lime"
+  >
+    <span class="flex w-5 flex-col gap-[6px]">
+      <span class="h-px w-full bg-mist transition-all group-hover:bg-lime"></span>
+      <span class="h-px w-3/5 bg-mist transition-all group-hover:w-full group-hover:bg-lime"></span>
+    </span>
+  </button>
+  <a
+    href={t.switchHref}
+    hreflang={lang === 'pt' ? 'en' : 'pt-BR'}
+    class="rounded-full border border-forest-700 bg-forest-900/70 px-3 py-2 font-mono text-[11px] tracking-[0.15em] text-sage uppercase backdrop-blur transition-colors hover:border-lime hover:text-lime"
+  >
+    {lang === 'pt' ? 'EN' : 'PT'}
+  </a>
+</div>
+
+<!-- Painel -->
+<div id="side-overlay" class="pointer-events-none fixed inset-0 z-[60] bg-forest-950/70 opacity-0 transition-opacity duration-500"></div>
+<aside
+  id="side-panel"
+  aria-label="Menu"
+  inert
+  class="fixed top-0 left-0 z-[70] flex h-dvh w-full max-w-[460px] -translate-x-full flex-col bg-forest-800 px-8 py-8 transition-transform duration-500 ease-[cubic-bezier(0.7,0,0.2,1)] sm:px-14"
+>
+  <button
+    id="menu-close"
+    type="button"
+    aria-label={t.close}
+    class="-ml-3 grid h-11 w-11 place-items-center rounded-full text-mist transition-colors hover:text-lime"
+  >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <path d="M5 5l14 14M19 5L5 19"></path>
+    </svg>
+  </button>
+
+  <div class="mt-auto grid grid-cols-[1fr_1.3fr] gap-8">
+    <div>
+      <p class="mb-6 font-mono text-[11px] tracking-[0.2em] text-moss uppercase">{t.social}</p>
+      <ul class="space-y-4 text-[15px]">
+        <li><a class="text-mist hover:text-lime" href={links.github} target="_blank" rel="noopener">GitHub</a></li>
+        <li><a class="text-mist hover:text-lime" href={links.linkedin} target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a class="text-mist hover:text-lime" href={links.cv[lang]} download>{lang === 'pt' ? 'Currículo' : 'Resume'}</a></li>
+        <li><a class="text-mist hover:text-lime" href={t.switchHref}>{t.switchLang}</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="mb-6 font-mono text-[11px] tracking-[0.2em] text-moss uppercase">{t.menu}</p>
+      <ul class="space-y-3">
+        {
+          t.items.map((item, i) => (
+            <li>
+              <a
+                href={`${prefix}#${item.id}`}
+                data-close
+                class="group flex items-center gap-3 font-display text-xl text-mist transition-colors hover:text-lime"
+              >
+                <span class="h-2 w-2 rounded-full transition-transform group-hover:scale-150" style={`background:${dots[i]}`} />
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="mt-auto pt-10">
+    <p class="mb-3 font-mono text-[11px] tracking-[0.2em] text-moss uppercase">{t.contact}</p>
+    <a href={`mailto:${links.email}`} class="text-[15px] text-mist hover:text-lime">{links.email}</a>
+  </div>
+</aside>
+
+<script>
+  const panel = document.getElementById('side-panel')!;
+  const overlay = document.getElementById('side-overlay')!;
+  const openBtn = document.getElementById('menu-open')!;
+  const closeBtn = document.getElementById('menu-close')!;
+
+  const setOpen = (open: boolean) => {
+    panel.classList.toggle('-translate-x-full', !open);
+    overlay.classList.toggle('opacity-0', !open);
+    overlay.classList.toggle('pointer-events-none', !open);
+    openBtn.setAttribute('aria-expanded', String(open));
+    panel.toggleAttribute('inert', !open);
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+    if (open) closeBtn.focus();
+    else openBtn.focus({ preventScroll: true });
+  };
+
+  openBtn.addEventListener('click', () => setOpen(true));
+  closeBtn.addEventListener('click', () => setOpen(false));
+  overlay.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openBtn.getAttribute('aria-expanded') === 'true') setOpen(false);
+  });
+  panel.querySelectorAll('[data-close]').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+</script>

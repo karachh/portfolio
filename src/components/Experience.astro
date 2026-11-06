@@ -1,0 +1,100 @@
+---
+// Linha do tempo que se preenche conforme a rolagem.
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = content[lang].experience;
+// Ordem cronológica: a mais antiga no topo, a atual no fim da linha
+const items = [...t.items].reverse();
+---
+
+<section id="experiencia" class="py-28 md:py-40">
+  <div class="mx-auto max-w-6xl px-4 sm:px-8">
+    <p class="eyebrow" data-reveal>{t.label}</p>
+    <h2 class="display-condensed mt-6 text-6xl text-mist sm:text-8xl md:text-9xl" data-reveal>{t.title}</h2>
+
+    <ol id="timeline" class="relative mt-20 md:mt-28">
+      <!-- Trilho + preenchimento -->
+      <div class="absolute top-0 bottom-0 left-[7px] w-px bg-forest-700 md:left-1/2" aria-hidden="true">
+        <div id="timeline-fill" class="w-px bg-lime" style="height:0"></div>
+      </div>
+
+      {
+        items.map((job, i) => (
+          <li class="relative grid gap-4 pb-20 pl-10 last:pb-0 md:grid-cols-2 md:gap-16 md:pl-0">
+            <span data-dot class="timeline-dot absolute top-1.5 left-0 h-[15px] w-[15px] rounded-full border-2 md:left-1/2 md:-translate-x-1/2" aria-hidden="true" />
+            <div class:list={['md:text-right', i % 2 === 1 && 'md:order-2 md:text-left']} data-reveal>
+              <p class="font-mono text-sm text-lime">{job.period}</p>
+              <p class="mt-1 font-mono text-[11px] tracking-[0.2em] text-moss uppercase">
+                {job.type}
+                {job.current && <span class="ml-2 rounded-full bg-lime/15 px-2 py-0.5 text-lime">{t.current}</span>}
+              </p>
+            </div>
+            <div class:list={[i % 2 === 1 && 'md:order-1 md:text-right']} data-reveal style="--d:120ms">
+              <h3 class="font-display text-2xl leading-tight font-semibold text-mist sm:text-3xl">{job.role}</h3>
+              <p class="mt-1 text-sage">{job.company}</p>
+              <ul class="mt-5 space-y-2 text-[15px] leading-relaxed text-sage/90">
+                {job.points.map((p) => (
+                  <li>{p}</li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<script>
+  const list = document.getElementById('timeline')!;
+  const fill = document.getElementById('timeline-fill')!;
+  const dots = [...list.querySelectorAll<HTMLElement>('[data-dot]')];
+  let ticking = false;
+  const update = () => {
+    const r = list.getBoundingClientRect();
+    const anchor = window.innerHeight * 0.6;
+    const p = Math.min(Math.max((anchor - r.top) / r.height, 0), 1);
+    fill.style.height = `${p * 100}%`;
+    // Acende cada bolinha quando o preenchimento chega nela
+    const reached = r.top + p * r.height;
+    for (const d of dots) {
+      const c = d.getBoundingClientRect();
+      d.classList.toggle('is-lit', reached >= c.top + c.height / 2);
+    }
+    ticking = false;
+  };
+  addEventListener(
+    'scroll',
+    () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    },
+    { passive: true },
+  );
+  addEventListener('resize', update);
+  update();
+</script>
+
+<style>
+  .timeline-dot {
+    border-color: var(--color-forest-500);
+    background: var(--color-forest-900);
+    transition:
+      background-color 0.35s ease,
+      border-color 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+  .timeline-dot.is-lit {
+    border-color: var(--color-lime);
+    background: var(--color-lime);
+    box-shadow:
+      0 0 0 6px rgba(196, 242, 107, 0.15),
+      0 0 18px rgba(196, 242, 107, 0.45);
+  }
+</style>

@@ -1,0 +1,71 @@
+---
+// Tela de carregamento: nome em serifa + barra fina + contador.
+// Aparece uma vez por sessão; sem JS, nunca aparece.
+interface Props {
+  label: string;
+}
+const { label } = Astro.props;
+---
+
+<div
+  id="loader"
+  class="fixed inset-0 z-[100] hidden flex-col items-center justify-end bg-forest-900 pb-[12vh] transition-opacity duration-700"
+  aria-hidden="true"
+>
+  <div
+    class="pointer-events-none absolute inset-0"
+    style="background: radial-gradient(ellipse 70% 55% at 50% 60%, rgba(61,122,92,0.18), transparent 70%);"
+  >
+  </div>
+  <div class="relative w-[min(560px,calc(100vw-32px))]">
+    <p class="mb-6 text-center font-serif text-5xl text-mist sm:text-6xl">Cauã Karach</p>
+    <div class="h-px w-full bg-forest-700">
+      <div id="loader-bar" class="h-px w-0 bg-lime"></div>
+    </div>
+    <div class="mt-3 flex justify-between font-mono text-[11px] tracking-[0.2em] text-sage uppercase">
+      <span>{label}</span>
+      <span id="loader-count" class="text-mist">0</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const loader = document.getElementById('loader')!;
+  const bar = document.getElementById('loader-bar')!;
+  const count = document.getElementById('loader-count')!;
+
+  let seen = false;
+  try {
+    seen = sessionStorage.getItem('loader-seen') === '1';
+  } catch {}
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!seen) {
+    loader.classList.remove('hidden');
+    loader.classList.add('flex');
+    document.documentElement.style.overflow = 'hidden';
+    const duration = reduce ? 300 : 1600;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      bar.style.width = `${eased * 100}%`;
+      count.textContent = String(Math.round(eased * 100));
+      if (p < 1) return requestAnimationFrame(tick);
+      setTimeout(() => {
+        loader.style.opacity = '0';
+        document.documentElement.style.overflow = '';
+        document.documentElement.classList.add('loaded');
+        setTimeout(() => loader.remove(), 700);
+      }, 250);
+    };
+    requestAnimationFrame(tick);
+    try {
+      sessionStorage.setItem('loader-seen', '1');
+    } catch {}
+  } else {
+    loader.remove();
+    document.documentElement.classList.add('loaded');
+  }
+</script>

@@ -1,0 +1,89 @@
+---
+// Logos via simple-icons. Para o que não tem logo de marca (SQL, ETL,
+// PostGIS, ISO 27001), usa ícones próprios desenhados em traço.
+import * as si from 'simple-icons';
+
+interface Props {
+  name: string;
+  slug?: string; // chave do simple-icons, ex.: 'python' -> siPython
+  custom?: keyof typeof customIcons;
+  size?: number;
+  mono?: boolean; // desenha em cor única (currentColor)
+}
+
+const customIcons = {
+  // Banco de dados (cilindro)
+  sql: {
+    color: '#5fb3f0',
+    body: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>',
+  },
+  // Extrai → transforma → carrega
+  etl: {
+    color: '#f0a37a',
+    body: '<rect x="2" y="9" width="5" height="6" rx="1.2"/><circle cx="12" cy="12" r="2.6"/><rect x="17" y="9" width="5" height="6" rx="1.2"/><path d="M7 12h2.4M14.6 12H17"/><path d="M15.4 10.4 17 12l-1.6 1.6"/><path d="M8 10.4 9.6 12 8 13.6"/>',
+  },
+  // Globo: dados geoespaciais
+  postgis: {
+    color: '#4fc1c9',
+    body: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>',
+  },
+  // Escudo: segurança da informação
+  iso: {
+    color: '#e8d27a',
+    body: '<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+  },
+  // Ciclo de sprint
+  scrum: {
+    color: '#3fb6e8',
+    body: '<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4h-4"/><circle cx="12" cy="12" r="2.2"/>',
+  },
+};
+
+const { name, slug, custom, size = 28, mono = false } = Astro.props;
+
+const key = slug ? `si${slug.charAt(0).toUpperCase()}${slug.slice(1)}` : null;
+const icon = key ? ((si as unknown) as Record<string, { path: string; hex: string } | undefined>)[key] : undefined;
+const own = custom ? customIcons[custom] : undefined;
+
+// Logos muito escuros somem no fundo verde: troca pela cor do texto
+const luminance = (hex: string) => {
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const fill = icon && !mono ? (luminance(icon.hex) < 0.35 ? '#e9f1ec' : `#${icon.hex}`) : 'currentColor';
+const initials = name
+  .replace(/[^A-Za-z0-9 ]/g, '')
+  .split(' ')
+  .map((w) => w[0])
+  .join('')
+  .slice(0, 3);
+---
+
+{
+  own ? (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke={mono ? 'currentColor' : own.color}
+      stroke-width="1.7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      set:html={own.body}
+    />
+  ) : icon ? (
+    <svg role="img" aria-hidden="true" viewBox="0 0 24 24" width={size} height={size} fill={fill}>
+      <path d={icon.path} />
+    </svg>
+  ) : (
+    <span
+      aria-hidden="true"
+      class="inline-grid place-items-center rounded-md border border-forest-500 font-mono text-[10px] font-medium text-lime"
+      style={`width:${size}px;height:${size}px`}
+    >
+      {initials}
+    </span>
+  )
+}

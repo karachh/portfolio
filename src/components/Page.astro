@@ -1,0 +1,74 @@
+---
+import Base from '../layouts/Base.astro';
+import Loader from './Loader.astro';
+import Sidebar from './Sidebar.astro';
+import Hero from './Hero.astro';
+import About from './About.astro';
+import Experience from './Experience.astro';
+import Stack from './Stack.astro';
+import Projects from './Projects.astro';
+import Contact from './Contact.astro';
+import Background from './Background.astro';
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+---
+
+<Base lang={lang}>
+  <Loader label={content[lang].loader} />
+  <Sidebar lang={lang} />
+  <main>
+    <!-- A tela inicial fica presa enquanto o restante sobe por cima dela -->
+    <div id="hero-pin" class="sticky top-0 z-0">
+      <Hero lang={lang} />
+    </div>
+    <div class="stack-sheet relative z-10 overflow-clip rounded-t-[2rem] bg-forest-900 md:rounded-t-[3rem]">
+      <!-- Fundo animado que acompanha a rolagem por trás do conteúdo -->
+      <div class="sticky top-0 -mb-[100svh] h-svh">
+        <Background variant="page" class="h-full w-full" />
+      </div>
+      <div class="relative z-10">
+        <About lang={lang} />
+        <Experience lang={lang} />
+        <Stack lang={lang} />
+        <Projects lang={lang} />
+        <Contact lang={lang} />
+      </div>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .stack-sheet {
+    box-shadow:
+      0 -1px 0 rgba(157, 184, 168, 0.12),
+      0 -30px 80px rgba(0, 0, 0, 0.55);
+  }
+</style>
+
+<script>
+  // Enquanto é coberta, a tela inicial afunda e escurece um pouco
+  const pin = document.getElementById('hero-pin')!;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let ticking = false;
+  const update = () => {
+    const p = Math.min(Math.max(scrollY / innerHeight, 0), 1);
+    pin.style.transform = reduce ? '' : `scale(${1 - p * 0.06})`;
+    pin.style.filter = `brightness(${1 - p * 0.45})`;
+    ticking = false;
+  };
+  addEventListener(
+    'scroll',
+    () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    },
+    { passive: true },
+  );
+  update();
+</script>
