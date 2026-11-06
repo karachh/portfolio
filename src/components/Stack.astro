@@ -11,7 +11,7 @@ const { lang } = Astro.props;
 const t = content[lang].stack;
 const g = t.groups;
 
-type Item = { name: string; group: string; slug?: string; custom?: 'sql' | 'etl' | 'postgis' | 'iso' | 'scrum' };
+type Item = { name: string; group: string; slug?: string; custom?: 'sql' | 'etl' | 'postgis' | 'iso' | 'scrum' | 'lock' };
 
 const master: Item[] = [
   { name: 'Python', group: g.lang, slug: 'python' },
@@ -24,6 +24,7 @@ const master: Item[] = [
   { name: 'Docker', group: g.tools, slug: 'docker' },
   { name: 'Git', group: g.tools, slug: 'git' },
   { name: 'Claude Code', group: g.tools, slug: 'claude' },
+  { name: g.cyber, group: g.process, custom: 'lock' },
   { name: 'ISO 27001', group: g.process, custom: 'iso' },
   { name: 'Scrum', group: g.process, custom: 'scrum' },
 ];

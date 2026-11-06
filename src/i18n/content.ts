@@ -48,6 +48,7 @@ const pt = {
     paragraphs: [
       'Sou Analista de Desenvolvimento de Sistemas na Tributech Gestão Pública, onde trabalho com Java (Spring Boot) e Angular, crio integradores e reviso o código do time. Antes, comecei como estagiário de atendimento na Publisoft, com testes manuais do sistema e suporte a clientes por acesso remoto.',
       'Entrei na Tributech como estagiário de suporte, e foi lá que os dados viraram o que mais gosto de fazer. Escrevo SQL avançado (JOINs, CTEs, subqueries) inclusive sobre dados georreferenciados no PostGIS, automatizo rotinas com Python e otimizo consultas lentas. Por isso estou estudando Engenharia de Dados e IA: quero construir pipelines confiáveis e levar modelos para o mundo real.',
+      'Também tenho noções de cibersegurança: fiz dois cursos da Google sobre fundamentos de segurança e gestão de riscos, e conheço a ISO 27001.',
     ],
     facts: [
       { k: 'Base', v: 'Maringá, PR' },
@@ -142,6 +143,7 @@ const pt = {
       data: 'Dados',
       tools: 'Ferramentas',
       process: 'Segurança e processos',
+      cyber: 'Cibersegurança',
       projects: 'Em projetos',
     },
   },
@@ -257,6 +259,7 @@ const en: Dict = {
     paragraphs: [
       'I am a Systems Development Analyst at Tributech Gestão Pública, where I work with Java (Spring Boot) and Angular, build integrations and review my team’s code. Before that, I started as a customer service intern at Publisoft, doing manual testing and remote customer support.',
       'I joined Tributech as a support intern, and that is where data became what I enjoy most. I write advanced SQL (JOINs, CTEs, subqueries), including over geospatial data in PostGIS, automate routines with Python and speed up slow queries. That is why I am studying Data Engineering and AI: I want to build reliable pipelines and bring models into the real world.',
+      'I also have a working knowledge of cybersecurity: I completed two Google courses on security foundations and risk management, and I know ISO 27001.',
     ],
     facts: [
       { k: 'Based in', v: 'Maringá, Brazil' },
@@ -348,6 +351,7 @@ const en: Dict = {
       data: 'Data',
       tools: 'Tools',
       process: 'Security & process',
+      cyber: 'Cybersecurity',
       projects: 'In projects',
     },
   },
