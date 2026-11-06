@@ -1,48 +1,33 @@
 # Portfolio
 
-Portfolio pessoal de **Cauã Karach**.
+Currículo online de **Cauã Karach**, Analista de Desenvolvimento de Sistemas e estudante de Engenharia de Software na UEM.
 
-> Status: 🟢 protótipo inicial
+Site de página única, em português e inglês, com experiência, formação, habilidades, projetos e contato.
 
-## Sobre
+## Tecnologias
 
-Site pessoal no formato de currículo online: trajetória, experiência, formação, habilidades e contato.
+- [Astro](https://astro.build)
+- [Tailwind CSS](https://tailwindcss.com)
+- Fundo animado e galeria de projetos baseados em componentes do [React Bits](https://reactbits.dev)
+- Hospedagem na [Vercel](https://vercel.com)
 
-## Documentação
-
-| Documento | Para que serve |
-|---|---|
-| [Briefing](docs/01-briefing.md) | Objetivo, público, conteúdo e seções do site |
-| [Referências](docs/02-referencias.md) | Sites e imagens de inspiração, e o que aproveitar de cada um |
-| [Decisões](docs/03-decisoes.md) | Registro das escolhas técnicas e de design, com o porquê |
-
-Imagens e prints de referência ficam em [`refs/`](refs/).
-
-## Stack
-
-- [Astro](https://astro.build), com versões em português e inglês
-- Tailwind CSS
-- Hospedagem na Vercel
-- Domínio próprio: a definir
-
-Detalhes e motivos em [docs/03-decisoes.md](docs/03-decisoes.md).
-
-## Como rodar localmente
+## Como rodar
 
 ```bash
 npm install
-npm run dev      # http://localhost:4321  (inglês em /en/)
-npm run build    # gera o site estático em dist/
+npm run dev
 ```
 
-## Onde mexer
+O site abre em `http://localhost:4321` (versão em inglês em `/en/`).
 
-| O quê | Arquivo |
-|---|---|
-| Todo o texto (PT e EN), links e projetos | `src/i18n/content.ts` |
-| Cores e fontes (tokens do tema) | `src/styles/global.css` |
-| Foto do hero | `src/assets/eu.jpg` |
-| Seções | `src/components/*.astro` |
-| Currículo em PDF | `public/curriculo-caua-karach.pdf` e `public/resume-caua-karach.pdf` (ainda faltam) |
+Para gerar a versão de produção:
 
-A tela de carregamento aparece uma vez por sessão do navegador. Para vê-la de novo, abra uma aba anônima.
+```bash
+npm run build
+```
+
+## Contato
+
+- [LinkedIn](https://www.linkedin.com/in/cauakarach/)
+- [GitHub](https://github.com/karachh)
+- karachbr@gmail.com
