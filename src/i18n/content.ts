@@ -111,7 +111,24 @@ const pt = {
   },
   certs: {
     label: 'Cursos e certificações',
-    empty: 'Em breve. Esta seção está sendo preenchida.',
+    items: [
+      {
+        name: 'Foundations of Cybersecurity',
+        issuer: 'Google · Coursera',
+        date: 'out/2025',
+        image: '/certificados/google-foundations-of-cybersecurity.jpg',
+        verify: 'https://coursera.org/verify/IKFIVAHLE3IG',
+      },
+      {
+        name: 'Play It Safe: Manage Security Risks',
+        issuer: 'Google · Coursera',
+        date: 'out/2025',
+        image: '/certificados/google-play-it-safe-manage-security-risks.jpg',
+        verify: 'https://coursera.org/verify/2FL65I1OONKY',
+      },
+    ],
+    view: 'Ver certificado',
+    verifyLabel: 'Verificar',
   },
   stack: {
     label: 'Minha stack',
@@ -300,7 +317,24 @@ const en: Dict = {
   },
   certs: {
     label: 'Courses & certifications',
-    empty: 'Coming soon. This section is being filled in.',
+    items: [
+      {
+        name: 'Foundations of Cybersecurity',
+        issuer: 'Google · Coursera',
+        date: 'Oct 2025',
+        image: '/certificados/google-foundations-of-cybersecurity.jpg',
+        verify: 'https://coursera.org/verify/IKFIVAHLE3IG',
+      },
+      {
+        name: 'Play It Safe: Manage Security Risks',
+        issuer: 'Google · Coursera',
+        date: 'Oct 2025',
+        image: '/certificados/google-play-it-safe-manage-security-risks.jpg',
+        verify: 'https://coursera.org/verify/2FL65I1OONKY',
+      },
+    ],
+    view: 'View certificate',
+    verifyLabel: 'Verify',
   },
   stack: {
     label: 'My stack',
